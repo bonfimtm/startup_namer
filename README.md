@@ -1,2 +1,2 @@
-# startup_namer
-Google Codelab: Write your first Flutter app
+# Startup Namer
+Startup name generator mobile app.
