@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return new MaterialApp(
       title: 'Startup Name Generator',
-      home: RandomWords(),
+      theme: new ThemeData(
+        primaryColor: Colors.red,
+      ),
+      home: new RandomWords(),
     );
   }
 }
@@ -20,20 +23,24 @@ class RandomWords extends StatefulWidget {
 
 class RandomWordsState extends State<RandomWords> {
   final _suggestions = <WordPair>[];
+  final _saved = new Set<WordPair>();
   final _biggerFont = const TextStyle(fontSize: 18.0);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Startup Name Generator'),
+    return new Scaffold(
+      appBar: new AppBar(
+        title: const Text('Startup Name Generator'),
+        actions: <Widget>[
+          new IconButton(icon: const Icon(Icons.list), onPressed: _pushSaved),
+        ],
       ),
       body: _buildSuggestions(),
     );
   }
 
   Widget _buildSuggestions() {
-    return ListView.builder(
+    return new ListView.builder(
       padding: const EdgeInsets.all(16.0),
       itemBuilder: (context, i) {
         if (i.isOdd) return Divider();
@@ -50,11 +57,48 @@ class RandomWordsState extends State<RandomWords> {
   }
 
   Widget _buildRow(WordPair pair) {
-    return ListTile(
-      title: Text(
+    final alreadySaved = _saved.contains(pair);
+    return new ListTile(
+      title: new Text(
         pair.asPascalCase,
         style: _biggerFont,
       ),
+      trailing: new Icon(
+        alreadySaved ? Icons.favorite : Icons.favorite_border,
+        color: alreadySaved ? Colors.red : null,
+      ),
+      onTap: () {
+        setState(() {
+          if (alreadySaved) {
+            _saved.remove(pair);
+          } else {
+            _saved.add(pair);
+          }
+        });
+      },
     );
+  }
+
+  void _pushSaved() {
+    Navigator.of(context).push(_savedSuggestionsPageRoute);
+  }
+
+  MaterialPageRoute get _savedSuggestionsPageRoute {
+    return new MaterialPageRoute(builder: (BuildContext context) {
+      final Iterable<ListTile> tiles = _saved.map((WordPair pair) {
+        return new ListTile(
+            title: new Text(pair.asPascalCase, style: _biggerFont));
+      });
+
+      final List<Widget> divided =
+      ListTile.divideTiles(context: context, tiles: tiles).toList();
+
+      return new Scaffold(
+        appBar: new AppBar(
+          title: const Text('Saved Suggestions'),
+        ),
+        body: new ListView(children: divided),
+      );
+    });
   }
 }
